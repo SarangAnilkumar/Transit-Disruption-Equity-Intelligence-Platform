@@ -1,0 +1,13 @@
+version: 2
+
+sources:
+  - name: raw
+    description: Raw ingestion tables loaded from GTFS static and GTFS-Realtime snapshots.
+    schema: public
+    tables:
+      - name: raw_gtfs_stops
+      - name: raw_gtfs_routes
+      - name: raw_gtfs_trips
+      - name: raw_gtfs_stop_times
+      - name: raw_gtfs_trip_updates
+      - name: raw_gtfs_service_alerts

@@ -1,0 +1,21 @@
+name: dbt_transit_equity
+version: 1.0.0
+config-version: 2
+
+profile: dbt_transit_equity
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  dbt_transit_equity:
+    +materialized: view

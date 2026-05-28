@@ -1,0 +1,30 @@
+project_name: transit-disruption-equity
+
+paths:
+  raw_data_dir: data/raw
+  processed_data_dir: data/processed
+  logs_dir: logs
+
+gtfs_static:
+  url: ${GTFS_STATIC_URL}
+  output_filename: gtfs_static.zip
+  key_files:
+    - stops.txt
+    - routes.txt
+    - trips.txt
+    - stop_times.txt
+    - calendar.txt
+    - calendar_dates.txt
+
+gtfs_realtime:
+  snapshot_frequency_minutes: 5
+  feeds:
+    trip_updates:
+      url: ${GTFS_REALTIME_TRIP_UPDATES_URL}
+      format: protobuf
+    service_alerts:
+      url: ${GTFS_REALTIME_SERVICE_ALERTS_URL}
+      format: protobuf
+  auth:
+    api_key_env_var: TRANSPORT_API_KEY
+    api_key_header: x-api-key

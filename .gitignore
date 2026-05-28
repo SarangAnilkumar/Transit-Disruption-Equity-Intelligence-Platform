@@ -1,0 +1,11 @@
+.env
+data/raw/
+data/processed/
+*.pb
+*.zip
+__pycache__/
+.pytest_cache/
+.venv/
+target/
+dbt_packages/
+logs/
