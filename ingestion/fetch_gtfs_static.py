@@ -34,6 +34,7 @@ KEY_FILES = [
     "calendar.txt",
     "calendar_dates.txt",
 ]
+PREFERRED_INNER_ZIP = "2/google_transit.zip"
 
 
 def _resolve_paths(settings: dict[str, Any]) -> tuple[Path, Path]:
@@ -54,9 +55,31 @@ def fetch_gtfs_static(url: str, timeout_seconds: int = 60) -> bytes:
 
 def extract_key_files(zip_bytes: bytes, output_dir: Path, logger) -> None:
     """Extract selected GTFS text files and print row counts."""
-    with zipfile.ZipFile(io.BytesIO(zip_bytes)) as archive:
-        archive_names = archive.namelist()
+    with zipfile.ZipFile(io.BytesIO(zip_bytes)) as outer_archive:
+        archive = outer_archive
+        inner_archive: zipfile.ZipFile | None = None
+        archive_names = outer_archive.namelist()
         basename_map = {Path(name).name: name for name in archive_names}
+
+        # PTV GTFS static is often bundled as mode-specific inner zip files.
+        # For metro trains, prefer 2/google_transit.zip when present.
+        if not any(file_name in basename_map for file_name in KEY_FILES):
+            inner_zip_name = None
+            if PREFERRED_INNER_ZIP in archive_names:
+                inner_zip_name = PREFERRED_INNER_ZIP
+            else:
+                inner_candidates = [name for name in archive_names if name.endswith(".zip")]
+                if inner_candidates:
+                    inner_zip_name = inner_candidates[0]
+            if inner_zip_name:
+                logger.info("Detected nested GTFS archive, using %s", inner_zip_name)
+                with outer_archive.open(inner_zip_name) as nested_handle:
+                    nested_bytes = nested_handle.read()
+                inner_archive = zipfile.ZipFile(io.BytesIO(nested_bytes))
+                archive = inner_archive
+                archive_names = archive.namelist()
+                basename_map = {Path(name).name: name for name in archive_names}
+
         for file_name in KEY_FILES:
             matched_path = basename_map.get(file_name)
             if not matched_path:
@@ -67,10 +90,12 @@ def extract_key_files(zip_bytes: bytes, output_dir: Path, logger) -> None:
             with archive.open(matched_path) as source, target_path.open("wb") as target:
                 target.write(source.read())
             try:
-                row_count = len(pd.read_csv(target_path))
+                row_count = len(pd.read_csv(target_path, low_memory=False))
                 logger.info("Extracted %s with %s rows", file_name, row_count)
             except Exception as exc:  # noqa: BLE001
                 logger.error("Could not read %s with pandas: %s", file_name, exc)
+        if inner_archive is not None:
+            inner_archive.close()
 
 
 def main() -> int:

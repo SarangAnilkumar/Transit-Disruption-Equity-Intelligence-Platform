@@ -127,10 +127,11 @@ def parse_trip_updates(feed_message: gtfs_realtime_pb2.FeedMessage, snapshot_ts:
 
 
 def _extract_translation_text(translation_field: Any) -> str | None:
-    """Extract first translation text value if present."""
+    """Extract joined translation text values if present."""
     if not translation_field or not translation_field.translation:
         return None
-    return translation_field.translation[0].text if translation_field.translation[0].text else None
+    texts = [item.text for item in translation_field.translation if item.text]
+    return " | ".join(texts) if texts else None
 
 
 def parse_service_alerts(feed_message: gtfs_realtime_pb2.FeedMessage, snapshot_ts: str) -> list[dict[str, Any]]:
@@ -173,6 +174,13 @@ def parse_feed(feed_name: str, pb_path: Path) -> pd.DataFrame:
     """Parse a protobuf file path into a pandas DataFrame."""
     feed_message = gtfs_realtime_pb2.FeedMessage()
     feed_message.ParseFromString(pb_path.read_bytes())
+    return parse_feed_message(feed_name=feed_name, feed_message=feed_message)
+
+
+def parse_feed_message(
+    feed_name: str, feed_message: "gtfs_realtime_pb2.FeedMessage"
+) -> pd.DataFrame:
+    """Parse an in-memory GTFS-R message into normalized rows."""
     snapshot_ts = _extract_ts_from_feed(feed_message)
 
     if feed_name == "trip_updates":

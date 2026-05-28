@@ -54,6 +54,34 @@ Detailed source documentation: `docs/data_sources.md`.
 
 If required URLs are missing, scripts intentionally return clear setup errors rather than failing silently.
 
+## Milestone 1.5 - Validate real Transport Victoria feeds
+1. Copy env template and set credentials:
+   - `cp .env.example .env`
+   - Paste your real key into `TRANSPORT_API_KEY` (never commit this file).
+2. Start with header auth:
+   - `TRANSPORT_API_AUTH_MODE=header`
+   - `TRANSPORT_API_HEADER_NAME=Ocp-Apim-Subscription-Key`
+3. If auth fails:
+   - Try `TRANSPORT_API_HEADER_NAME=KeyID`
+   - If still failing, switch to query auth:
+     - `TRANSPORT_API_AUTH_MODE=query`
+     - `TRANSPORT_API_QUERY_PARAM_NAME=subscription-key`
+4. Run validation commands:
+   - `python ingestion/fetch_gtfs_static.py`
+   - `python ingestion/fetch_gtfs_realtime.py --feed trip_updates`
+   - `python ingestion/fetch_gtfs_realtime.py --feed service_alerts`
+   - `python ingestion/validate_transport_feeds.py --feed both`
+
+Expected output locations:
+- Static raw zip: `data/raw/gtfs_static/load_date=YYYY-MM-DD/gtfs_static.zip`
+- Realtime raw protobuf: `data/raw/gtfs_realtime/feed=<feed_name>/year=YYYY/month=MM/day=DD/hour=HH/minute=mm/feed.pb`
+- Realtime parsed CSV: `data/processed/gtfs_realtime/feed=<feed_name>/year=YYYY/month=MM/day=DD/hour=HH/minute=mm/parsed.csv`
+- Validation report: `data/samples/feed_validation_report_<timestamp>.json`
+
+Interpretation notes:
+- **Request failed** (HTTP/auth error): fix URL/auth mode/header/parameter configuration.
+- **Request succeeded but parsed rows = 0**: this can be a valid quiet snapshot; collect more snapshots before concluding feed issues.
+
 ## Important metric framing
 This project derives a **disruption exposure analytical metric** from observed feed snapshots. It is **not** an official government reliability KPI and should be interpreted as a decision-support proxy.
 

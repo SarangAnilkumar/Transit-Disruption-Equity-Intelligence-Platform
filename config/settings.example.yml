@@ -17,7 +17,9 @@ gtfs_static:
     - calendar_dates.txt
 
 gtfs_realtime:
-  snapshot_frequency_minutes: 5
+  snapshot_frequency_minutes: 15
+  timeout_seconds: 60
+  user_agent: transit-disruption-equity/0.1
   feeds:
     trip_updates:
       url: ${GTFS_REALTIME_TRIP_UPDATES_URL}
@@ -27,4 +29,6 @@ gtfs_realtime:
       format: protobuf
   auth:
     api_key_env_var: TRANSPORT_API_KEY
-    api_key_header: x-api-key
+    auth_mode: header
+    header_name: Ocp-Apim-Subscription-Key
+    query_param_name: subscription-key
