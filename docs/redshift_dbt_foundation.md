@@ -19,6 +19,12 @@ See `.env.example` for placeholders:
 - Redshift: host, port, database, user, password, schema names, IAM role ARN
 - dbt: `DBT_PROFILES_DIR`, `DBT_TARGET`
 
+### Redshift schema naming
+
+The physical Redshift schema for loaded tables is **`raw_data`** (not `raw`), because `RAW` is a reserved word in Amazon Redshift. Set `REDSHIFT_SCHEMA_RAW=raw_data` in `.env`.
+
+dbt still uses source name `raw` in `source('raw', 'raw_gtfs_stops')`; the source definition maps that logical name to the `raw_data` schema via `REDSHIFT_SCHEMA_RAW`.
+
 Copy dbt profile locally:
 
 ```bash
@@ -51,11 +57,39 @@ python ingestion/init_redshift_raw_schema.py
 # 3) COPY into raw tables (append by default)
 python ingestion/load_s3_to_redshift_raw.py --dataset all
 
-# Optional destructive reload (explicit flag only)
-python ingestion/load_s3_to_redshift_raw.py --dataset gtfs_stops --truncate-before-load
+# Clean dev reload: truncate each target table before COPY (explicit flag only)
+python ingestion/load_s3_to_redshift_raw.py --dataset all --truncate-before-load
 ```
 
+### Append vs truncate
+
+- **Default:** `COPY` **appends** rows. Re-running a load without truncation doubles row counts (for example `raw_gtfs_stops` at ~3007 source rows can show ~6014 after two loads).
+- **`--truncate-before-load`:** runs `TRUNCATE TABLE schema.table;` immediately before each selected table’s `COPY`. Use for clean dev reloads after fixing upstream CSVs or re-uploading S3 objects.
+- **Dry-run:** with `--truncate-before-load`, logs include planned `TRUNCATE` statements before `COPY` SQL.
+- **Production:** prefer append with batch keys / dedupe in staging, or controlled truncate only when you intend to replace a full snapshot.
+
+Failed loads write `redshift_load_report_*.json` including the latest rows from `sys_load_error_detail` (line, column, error code/message) when the cluster allows that query.
+
 Reports are written under `data/processed/warehouse_ready/quality_reports/`.
+
+### SEIFA validation (equity → warehouse-ready → raw)
+
+`ingestion/prepare_seifa_sa2.py` filters ABS Excel footers and bad rows before `seifa_sa2_ready.csv`:
+
+- `sa2_code`: non-null string, trimmed, must match `^\d{9}$` (Australian SA2 code).
+- `sa2_name`: non-null; rows with ABS footer/title strings (for example `© Commonwealth of Australia`) are dropped.
+- `irsd_score`: required numeric; `irsd_decile` / `irsd_percentile` numeric or null when present.
+
+`ingestion/run_local_quality_checks.py --dataset seifa_sa2_ready` errors if any row has `sa2_code` longer than 32 characters, non-numeric `sa2_code`, or missing/non-numeric `irsd_score`.
+
+After changing SEIFA prep, rebuild equity warehouse-ready, re-upload S3, then reload with truncate:
+
+```bash
+python ingestion/prepare_seifa_sa2.py
+python ingestion/build_warehouse_ready_datasets.py --dataset equity
+python ingestion/upload_warehouse_ready_to_s3.py --dataset seifa_sa2_ready
+python ingestion/load_s3_to_redshift_raw.py --dataset seifa_sa2_ready --truncate-before-load
+```
 
 ## dbt setup
 
@@ -91,7 +125,7 @@ Views in `staging` schema:
 - Analytics: `stg_sa2_disruption_observations_base`
 - Equity: `stg_seifa_sa2`
 
-Sources defined in `dbt_transit_equity/models/sources/sources.yml` (`raw` schema).
+Sources defined in `dbt_transit_equity/models/sources/sources.yml` (dbt source name `raw`, Redshift schema `raw_data`).
 
 ## dbt docs and lineage screenshots
 
@@ -99,7 +133,18 @@ After first successful `dbt docs generate`:
 
 1. Open `dbt docs serve` lineage view.
 2. Capture screenshots of raw → staging lineage.
-3. Optionally commit screenshots under `docs/assets/dbt_lineage/` (not generated automatically in this milestone).
+3. Capture lineage screenshots under `docs/assets/dbt_lineage/` (see `01_`–`06_` PNGs for Milestone 5 evidence).
+
+## Milestone 5 evidence
+
+Live Redshift + dbt validation screenshots are stored in [`docs/assets/dbt_lineage/`](assets/dbt_lineage/):
+
+- `01_dbt_lineage_raw_to_staging.png` — full lineage DAG (`raw` → staging)
+- `02_dbt_docs_database_sidebar.png` — dbt docs Database / project sidebar
+- `03_staging_model_detail.png` — staging model detail (e.g. `stg_sa2_disruption_observations_base`)
+- `04_dbt_column_tests.png` — column tests on a staging model
+- `05_dbt_run_test_success.png` — `dbt run` / `dbt test` / `dbt docs generate` success output
+- `06_dbt_project_overview.png` — project overview (optional)
 
 ## Safety notes
 
