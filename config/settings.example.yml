@@ -59,7 +59,7 @@ aws:
   dbt_artifacts_prefix: transit-equity/dbt_artifacts
 
 redshift:
-  schema_raw: raw
+  schema_raw: raw_data
   schema_staging: staging
   port: 5439
 

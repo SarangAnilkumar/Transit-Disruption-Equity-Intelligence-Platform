@@ -10,6 +10,7 @@ from typing import Any
 import pandas as pd
 import yaml
 
+from ingestion.seifa_validation import validate_seifa_sa2_quality
 from ingestion.utils import ensure_dir, save_json_to_file
 
 DEFAULT_SCHEMA_PATH = Path("config/warehouse_schemas.yml")
@@ -320,6 +321,13 @@ def run_quality_checks(df: pd.DataFrame, schema: dict[str, Any]) -> dict[str, li
             errors.append(f"{dataset_name}: {count} matched stops missing sa2_code")
         else:
             passed.append(f"{dataset_name}: matched stops have sa2_code")
+
+    if dataset_name == "seifa_sa2_ready":
+        seifa_errors = validate_seifa_sa2_quality(df, dataset_name=dataset_name)
+        if seifa_errors:
+            errors.extend(seifa_errors)
+        else:
+            passed.append(f"{dataset_name}: SA2 code and IRSD score validation passed")
 
     return {"errors": errors, "warnings": warnings, "passed": passed}
 

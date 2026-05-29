@@ -120,6 +120,8 @@ Each build run writes:
 
 ## Redshift preparation (Milestone 5)
 
+Loaded tables live in the Redshift schema **`raw_data`** (not `raw`), because `RAW` is a reserved word in Amazon Redshift. Table names remain `raw_gtfs_stops`, etc.
+
 Milestone 4 delivers:
 
 1. Stable local CSV contracts matching `sql/create_raw_tables.sql`

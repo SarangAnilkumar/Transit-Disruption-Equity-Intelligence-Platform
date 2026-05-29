@@ -9,7 +9,7 @@ This document describes the local data layers and how they prepare for warehouse
 | Raw | `data/raw/` | Immutable feed snapshots (zip, protobuf, boundaries) |
 | Processed | `data/processed/` | Parsed and derived CSV/TXT outputs |
 | Warehouse-ready | `data/processed/warehouse_ready/` | Standardised, metadata-enriched load contracts |
-| SQL raw DDL | `sql/create_raw_tables.sql` | Redshift raw table definitions (design only in M4) |
+| SQL raw DDL | `sql/create_raw_tables.sql` | Redshift `raw_data` schema table definitions (M5 COPY target) |
 | dbt (future) | `dbt/` | Staging, intermediate, and mart models (Milestone 5+) |
 
 ## Warehouse-ready datasets
@@ -26,7 +26,7 @@ Each row includes load metadata: `warehouse_dataset`, `source_file`, `prepared_a
 
 ## Future dbt layers (planned)
 
-- **Staging**: Typed views over raw tables with consistent naming
+- **Staging**: Typed views over `raw_data` tables with consistent naming (dbt source name `raw`)
 - **Intermediate**: Trip delay events, service alert events, route daily disruption
 - **Marts**: SA2 disruption exposure, equity-disruption score
 

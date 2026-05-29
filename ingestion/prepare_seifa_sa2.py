@@ -18,6 +18,7 @@ from ingestion.seifa_excel import (  # noqa: E402
     read_seifa_file,
     scan_excel_workbook,
 )
+from ingestion.seifa_validation import clean_seifa_sa2_dataframe  # noqa: E402
 from ingestion.utils import (  # noqa: E402
     ensure_dir,
     load_env,
@@ -44,7 +45,7 @@ def _build_success_report(
     source_path: Path,
     read_result,
     output_csv: Path,
-    rows: int,
+    cleaning_stats: dict[str, Any],
 ) -> dict[str, Any]:
     return {
         "status": "success",
@@ -57,7 +58,13 @@ def _build_success_report(
         "detected_columns": read_result.detected_columns,
         "original_columns": read_result.original_columns,
         "output_file": str(output_csv),
-        "rows": rows,
+        "rows": cleaning_stats.get("valid_sa2_rows", 0),
+        "input_rows": cleaning_stats.get("input_rows", 0),
+        "valid_sa2_rows": cleaning_stats.get("valid_sa2_rows", 0),
+        "dropped_invalid_sa2_code_rows": cleaning_stats.get("dropped_invalid_sa2_code_rows", 0),
+        "dropped_invalid_sa2_name_rows": cleaning_stats.get("dropped_invalid_sa2_name_rows", 0),
+        "dropped_missing_score_rows": cleaning_stats.get("dropped_missing_score_rows", 0),
+        "suspicious_rows_sample": cleaning_stats.get("suspicious_rows_sample", []),
         "created_at": now_utc_iso(),
     }
 
@@ -185,24 +192,26 @@ def main() -> int:
             logger.error(report["error_message"])
             return 1
 
-        out = _prepare_output(read_result.dataframe, col_map, source_path, release_year)
-        if out["irsd_score"].isna().all():
+        prepared = _prepare_output(read_result.dataframe, col_map, source_path, release_year)
+        out, cleaning_stats = clean_seifa_sa2_dataframe(prepared)
+        if cleaning_stats["valid_sa2_rows"] == 0:
             report = _build_failure_report(
                 source_path=source_path,
-                error_message="Detected IRSD score column but all values were null after parsing.",
+                error_message="No valid SA2 rows remained after SEIFA validation filtering.",
                 scanned_sheets=scanned_sheets,
                 detected_columns=col_map,
-                missing_required_fields=["irsd_score"],
+                missing_required_fields=["sa2_code", "irsd_score"],
                 selected_sheet=read_result.sheet_name,
                 detected_header_row=read_result.header_row,
             )
+            report.update(cleaning_stats)
             _write_report(output_dir, report)
             logger.error(report["error_message"])
             return 1
 
         output_csv = output_dir / "seifa_sa2_ready.csv"
         out.to_csv(output_csv, index=False)
-        report = _build_success_report(source_path, read_result, output_csv, int(len(out)))
+        report = _build_success_report(source_path, read_result, output_csv, cleaning_stats)
         _write_report(output_dir, report)
         logger.info(
             "Wrote SEIFA-ready data to %s using sheet=%s header_row=%s",

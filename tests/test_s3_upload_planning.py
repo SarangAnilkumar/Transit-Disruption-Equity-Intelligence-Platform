@@ -23,6 +23,7 @@ def test_upload_plan_filters_dataset(tmp_path: Path) -> None:
 
 def test_upload_cli_dry_run_missing_bucket(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("sys.argv", ["upload_warehouse_ready_to_s3.py", "--dry-run"])
+    monkeypatch.setattr("ingestion.upload_warehouse_ready_to_s3.load_env", lambda: None)
     monkeypatch.delenv("S3_BUCKET_NAME", raising=False)
     assert main() == 1
 

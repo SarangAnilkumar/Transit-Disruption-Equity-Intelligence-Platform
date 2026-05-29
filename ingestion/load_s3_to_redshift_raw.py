@@ -16,7 +16,11 @@ from ingestion.redshift_utils import (  # noqa: E402
     build_copy_sql,
     check_table_row_count,
     copy_csv_from_s3,
+    fetch_recent_load_errors,
     get_redshift_connection_from_env,
+    get_target_table_columns,
+    read_csv_header,
+    validate_and_resolve_copy_columns,
     validate_redshift_config,
     write_load_report,
 )
@@ -76,6 +80,13 @@ def build_load_plans(
         key = build_s3_key(prefix, dataset_name, local_path.name, domain=domain)
         s3_uri = f"s3://{bucket}/{key}"
         table = schema.get("future_redshift_table", dataset_name)
+        csv_columns = read_csv_header(local_path)
+        table_columns = get_target_table_columns(schema, registry)
+        copy_columns = validate_and_resolve_copy_columns(
+            csv_columns,
+            table_columns,
+            dataset_name=dataset_name,
+        )
         plans.append(
             {
                 "dataset_name": dataset_name,
@@ -84,6 +95,7 @@ def build_load_plans(
                 "s3_uri": s3_uri,
                 "schema": schema_raw,
                 "table": table,
+                "copy_columns": copy_columns,
             }
         )
     return plans
@@ -117,7 +129,7 @@ def main() -> int:
     )
     registry = load_schema_registry(Path(args.schema_path))
     _, redshift_config = validate_redshift_config()
-    schema_raw = redshift_config.get("schema_raw", "raw")
+    schema_raw = redshift_config.get("schema_raw", "raw_data")
 
     plans = build_load_plans(registry, args.dataset, input_dir, bucket, prefix, schema_raw)
     batch_id = new_load_batch_id()
@@ -159,33 +171,61 @@ def main() -> int:
                 report["entries"].append(plan)
                 continue
 
+            copy_columns = plan["copy_columns"]
             copy_sql = build_copy_sql(
                 plan["schema"],
                 plan["table"],
                 plan["s3_uri"],
                 redshift_config.get("iam_role_arn") or os.getenv("REDSHIFT_IAM_ROLE_ARN", ""),
+                copy_columns,
                 truncate=args.truncate_before_load,
             )
             entry = {**plan, "copy_sql": copy_sql}
             if args.dry_run:
-                logger.info("[dry-run] COPY %s.%s <= %s", plan["schema"], plan["table"], plan["s3_uri"])
+                if args.truncate_before_load:
+                    logger.info(
+                        "[dry-run] TRUNCATE %s.%s",
+                        plan["schema"],
+                        plan["table"],
+                    )
+                logger.info(
+                    "[dry-run] COPY %s.%s (%s) <= %s",
+                    plan["schema"],
+                    plan["table"],
+                    ", ".join(copy_columns),
+                    plan["s3_uri"],
+                )
                 report["entries"].append(entry)
                 continue
 
             assert connection is not None
-            copy_csv_from_s3(
-                connection,
-                plan["schema"],
-                plan["table"],
-                plan["s3_uri"],
-                redshift_config["iam_role_arn"],
-                truncate=args.truncate_before_load,
-                dry_run=False,
-            )
-            row_count = check_table_row_count(connection, plan["schema"], plan["table"])
-            entry["row_count_after_load"] = row_count
-            report["entries"].append(entry)
-            logger.info("Loaded %s.%s (%s rows)", plan["schema"], plan["table"], row_count)
+            try:
+                copy_csv_from_s3(
+                    connection,
+                    plan["schema"],
+                    plan["table"],
+                    plan["s3_uri"],
+                    redshift_config["iam_role_arn"],
+                    copy_columns,
+                    truncate=args.truncate_before_load,
+                    dry_run=False,
+                )
+                row_count = check_table_row_count(connection, plan["schema"], plan["table"])
+                entry["row_count_after_load"] = row_count
+                report["entries"].append(entry)
+                logger.info("Loaded %s.%s (%s rows)", plan["schema"], plan["table"], row_count)
+            except Exception as exc:  # noqa: BLE001
+                entry["load_error"] = str(exc)
+                try:
+                    entry["sys_load_error_detail"] = fetch_recent_load_errors(
+                        connection,
+                        plan["table"],
+                        limit=5,
+                    )
+                except Exception as detail_exc:  # noqa: BLE001
+                    entry["sys_load_error_detail_query_error"] = str(detail_exc)
+                report["entries"].append(entry)
+                raise
     except Exception as exc:  # noqa: BLE001
         report["errors"].append(str(exc))
         logger.error("Redshift load failed: %s", exc)
