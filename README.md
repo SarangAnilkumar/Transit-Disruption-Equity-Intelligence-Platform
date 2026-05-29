@@ -91,6 +91,24 @@ This project derives a **disruption exposure analytical metric** from observed f
 - Redshift load scripts and dbt staging/intermediate/marts models.
 - Orchestration, data quality checks, and snapshot cadence hardening.
 
+## Milestone 3 - Stop-to-SA2 geospatial mapping
+This milestone builds local geospatial/equity readiness artifacts before any AWS or warehouse orchestration.
+
+Commands:
+- `python ingestion/ingest_sa2_boundaries.py`
+- `python ingestion/build_stop_sa2_mapping.py`
+- `python ingestion/build_route_sa2_coverage.py`
+- `python ingestion/prepare_seifa_sa2.py`
+- `python ingestion/build_sa2_disruption_base.py`
+- `pytest -q`
+
+Primary outputs:
+- `data/processed/geospatial/stops_sa2_mapping.csv`
+- `data/processed/geospatial/route_sa2_coverage.csv`
+- `data/processed/geospatial/geospatial_mapping_report.json`
+- `data/processed/equity/seifa_sa2_ready.csv` (if SEIFA source file is supplied)
+- `data/processed/analytics/sa2_disruption_observations_base.csv` (if parsed trip updates exist)
+
 ## Known limitations
 - GTFS-Realtime snapshots are sampled observations, not complete operational records.
 - Feed coverage and schema quality can vary by operator and time.

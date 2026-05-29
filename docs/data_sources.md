@@ -37,8 +37,16 @@
 - **Expected grain**: Polygon geometry by SA2.
 - **Refresh frequency**: ABS boundary release cycle.
 - **Expected format**: GeoPackage/Shapefile/GeoJSON.
-- **Current status**: Planned; geospatial preprocessing not in MVP.
+- **Current status**: Milestone 3 local preprocessing scripts implemented; awaiting/using user-provided ABS raw file.
 - **Known risks**: Coordinate reference mismatches, boundary updates across years.
+
+## ABS SEIFA SA2 (Milestone 3/next)
+- **Purpose**: Equity context through socio-economic disadvantage indicators at SA2 level.
+- **Expected grain**: SA2.
+- **Refresh frequency**: Census/release cycle.
+- **Expected format**: CSV/XLSX.
+- **Current status**: Preparation script implemented; depends on user-provided source file.
+- **Known risks**: Column naming variation and release-year comparability.
 
 ## Population / Car Ownership Proxies (future)
 - **Purpose**: Estimate transport dependence and contextualize disruption burden.

@@ -4,3 +4,8 @@ python-dotenv
 PyYAML
 gtfs-realtime-bindings
 pytest
+geopandas
+shapely
+pyproj
+pyogrio
+openpyxl

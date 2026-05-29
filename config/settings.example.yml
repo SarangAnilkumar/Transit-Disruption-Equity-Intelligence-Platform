@@ -32,3 +32,18 @@ gtfs_realtime:
     auth_mode: header
     header_name: Ocp-Apim-Subscription-Key
     query_param_name: subscription-key
+
+geospatial:
+  sa2_boundaries_path: data/raw/geospatial/sa2_boundaries/<your_sa2_boundary_file.gpkg>
+  sa2_boundary_layer:
+  output_dir: data/processed/geospatial
+  target_crs: EPSG:4326
+  projected_crs: EPSG:7855
+
+equity:
+  seifa_sa2_path: data/raw/equity/seifa/<your_seifa_sa2_file.xlsx>
+  output_dir: data/processed/equity
+  seifa_release_year: 2021
+
+analytics:
+  output_dir: data/processed/analytics
