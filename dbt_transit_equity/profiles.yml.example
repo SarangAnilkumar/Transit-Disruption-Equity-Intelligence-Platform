@@ -1,0 +1,19 @@
+# Copy to profiles.yml locally only. Never commit real credentials.
+# Usage:
+#   cp profiles.yml.example profiles.yml
+#   export DBT_PROFILES_DIR=./dbt_transit_equity
+
+dbt_transit_equity:
+  target: "{{ env_var('DBT_TARGET', 'dev') }}"
+  outputs:
+    dev:
+      type: redshift
+      host: "{{ env_var('REDSHIFT_HOST') }}"
+      user: "{{ env_var('REDSHIFT_USER') }}"
+      password: "{{ env_var('REDSHIFT_PASSWORD') }}"
+      port: "{{ env_var('REDSHIFT_PORT', '5439') | as_number }}"
+      dbname: "{{ env_var('REDSHIFT_DATABASE') }}"
+      schema: "{{ env_var('REDSHIFT_SCHEMA_STAGING', 'staging') }}"
+      threads: 4
+      connect_timeout: 30
+      sslmode: prefer

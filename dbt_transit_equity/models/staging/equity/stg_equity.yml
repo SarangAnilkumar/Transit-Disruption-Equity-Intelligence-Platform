@@ -1,0 +1,9 @@
+version: 2
+
+models:
+  - name: stg_seifa_sa2
+    columns:
+      - name: sa2_code
+        tests: [not_null, unique]
+      - name: irsd_score
+        tests: [not_null]

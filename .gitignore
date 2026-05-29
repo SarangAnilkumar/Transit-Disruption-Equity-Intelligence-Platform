@@ -9,6 +9,10 @@ __pycache__/
 target/
 dbt_packages/
 logs/
+dbt_transit_equity/target/
+dbt_transit_equity/logs/
+dbt_transit_equity/dbt_packages/
+dbt_transit_equity/profiles.yml
 data/raw/geospatial/
 data/raw/equity/
 data/processed/geospatial/*.parquet

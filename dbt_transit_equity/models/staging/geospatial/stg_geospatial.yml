@@ -1,0 +1,23 @@
+version: 2
+
+models:
+  - name: stg_stops_sa2_mapping
+    columns:
+      - name: stop_id
+        tests: [not_null, unique]
+      - name: is_matched
+        tests:
+          - not_null
+          - accepted_values:
+              values: [true, false]
+      - name: sa2_code
+        tests:
+          - not_null:
+              where: "is_matched = true"
+
+  - name: stg_route_sa2_coverage
+    columns:
+      - name: route_id
+        tests: [not_null]
+      - name: sa2_code
+        tests: [not_null]

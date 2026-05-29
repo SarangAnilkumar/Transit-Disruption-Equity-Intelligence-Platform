@@ -2,12 +2,36 @@ version: 2
 
 sources:
   - name: raw
-    description: Raw ingestion tables loaded from GTFS static and GTFS-Realtime snapshots.
-    schema: public
+    description: Redshift raw schema loaded from warehouse-ready CSV files via S3 COPY.
+    schema: "{{ env_var('REDSHIFT_SCHEMA_RAW', 'raw') }}"
     tables:
       - name: raw_gtfs_stops
+        description: GTFS stops from latest static load.
       - name: raw_gtfs_routes
+        description: GTFS routes from latest static load.
       - name: raw_gtfs_trips
+        description: GTFS trips from latest static load.
       - name: raw_gtfs_stop_times
+        description: GTFS stop times from latest static load.
       - name: raw_gtfs_trip_updates
+        description: Parsed GTFS-Realtime trip update observations.
+        loaded_at_field: prepared_at
+        config:
+          freshness:
+            warn_after: {count: 7, period: day}
+            error_after: {count: 14, period: day}
       - name: raw_gtfs_service_alerts
+        description: Parsed GTFS-Realtime service alert entities.
+        loaded_at_field: prepared_at
+        config:
+          freshness:
+            warn_after: {count: 7, period: day}
+            error_after: {count: 14, period: day}
+      - name: raw_stops_sa2_mapping
+        description: Stop-to-SA2 spatial mapping table.
+      - name: raw_route_sa2_coverage
+        description: Route-to-SA2 network coverage aggregation.
+      - name: raw_sa2_disruption_observations_base
+        description: SA2-level disruption observation aggregates from trip updates.
+      - name: raw_seifa_sa2
+        description: SEIFA SA2 equity reference data (optional).

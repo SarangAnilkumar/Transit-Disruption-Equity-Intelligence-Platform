@@ -1,7 +1,12 @@
--- Redshift-compatible raw layer DDL aligned with warehouse-ready local schemas (Milestone 4).
--- COPY execution is deferred to Milestone 5.
+-- Redshift schema and raw layer DDL aligned with warehouse-ready local schemas.
+-- Execute via: python ingestion/init_redshift_raw_schema.py
+-- COPY execution via: python ingestion/load_s3_to_redshift_raw.py
 
-create table if not exists raw_gtfs_stops (
+create schema if not exists raw;
+create schema if not exists staging;
+create schema if not exists audit;
+
+create table if not exists raw.raw_gtfs_stops (
     stop_id varchar(64),
     stop_name varchar(512),
     stop_lat numeric(10, 7),
@@ -17,7 +22,7 @@ create table if not exists raw_gtfs_stops (
     loaded_at timestamp default current_timestamp
 );
 
-create table if not exists raw_gtfs_routes (
+create table if not exists raw.raw_gtfs_routes (
     route_id varchar(64),
     agency_id varchar(64),
     route_short_name varchar(128),
@@ -32,7 +37,7 @@ create table if not exists raw_gtfs_routes (
     loaded_at timestamp default current_timestamp
 );
 
-create table if not exists raw_gtfs_trips (
+create table if not exists raw.raw_gtfs_trips (
     trip_id varchar(128),
     route_id varchar(64),
     service_id varchar(64),
@@ -49,7 +54,7 @@ create table if not exists raw_gtfs_trips (
     loaded_at timestamp default current_timestamp
 );
 
-create table if not exists raw_gtfs_stop_times (
+create table if not exists raw.raw_gtfs_stop_times (
     trip_id varchar(128),
     stop_id varchar(64),
     stop_sequence integer,
@@ -66,7 +71,7 @@ create table if not exists raw_gtfs_stop_times (
     loaded_at timestamp default current_timestamp
 );
 
-create table if not exists raw_gtfs_trip_updates (
+create table if not exists raw.raw_gtfs_trip_updates (
     feed_name varchar(64),
     snapshot_timestamp timestamp,
     entity_id varchar(128),
@@ -88,7 +93,7 @@ create table if not exists raw_gtfs_trip_updates (
     loaded_at timestamp default current_timestamp
 );
 
-create table if not exists raw_gtfs_service_alerts (
+create table if not exists raw.raw_gtfs_service_alerts (
     feed_name varchar(64),
     snapshot_timestamp timestamp,
     entity_id varchar(128),
@@ -108,7 +113,7 @@ create table if not exists raw_gtfs_service_alerts (
     loaded_at timestamp default current_timestamp
 );
 
-create table if not exists raw_stops_sa2_mapping (
+create table if not exists raw.raw_stops_sa2_mapping (
     stop_id varchar(64),
     stop_name varchar(512),
     stop_lat numeric(10, 7),
@@ -127,7 +132,7 @@ create table if not exists raw_stops_sa2_mapping (
     loaded_at timestamp default current_timestamp
 );
 
-create table if not exists raw_route_sa2_coverage (
+create table if not exists raw.raw_route_sa2_coverage (
     route_id varchar(64),
     route_short_name varchar(128),
     route_long_name varchar(512),
@@ -146,7 +151,7 @@ create table if not exists raw_route_sa2_coverage (
     loaded_at timestamp default current_timestamp
 );
 
-create table if not exists raw_sa2_disruption_observations_base (
+create table if not exists raw.raw_sa2_disruption_observations_base (
     snapshot_date varchar(16),
     snapshot_hour integer,
     sa2_code varchar(32),
@@ -167,7 +172,7 @@ create table if not exists raw_sa2_disruption_observations_base (
     loaded_at timestamp default current_timestamp
 );
 
-create table if not exists raw_seifa_sa2 (
+create table if not exists raw.raw_seifa_sa2 (
     sa2_code varchar(32),
     sa2_name varchar(512),
     seifa_release_year integer,
@@ -181,7 +186,7 @@ create table if not exists raw_seifa_sa2 (
     loaded_at timestamp default current_timestamp
 );
 
-create table if not exists raw_ingestion_runs (
+create table if not exists audit.ingestion_runs (
     run_id varchar(64),
     feed_name varchar(64),
     started_at timestamp,
@@ -192,7 +197,7 @@ create table if not exists raw_ingestion_runs (
     loaded_at timestamp default current_timestamp
 );
 
-create table if not exists raw_source_files (
+create table if not exists audit.source_files (
     source_file_id varchar(64),
     dataset_name varchar(128),
     source_path varchar(1024),
@@ -204,7 +209,7 @@ create table if not exists raw_source_files (
     loaded_at timestamp default current_timestamp
 );
 
-create table if not exists raw_load_quality_reports (
+create table if not exists audit.load_quality_reports (
     report_id varchar(64),
     dataset_name varchar(128),
     load_batch_id varchar(64),

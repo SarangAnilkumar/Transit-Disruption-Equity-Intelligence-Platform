@@ -126,6 +126,19 @@ Primary outputs (local, gitignored):
 
 Documentation: `docs/warehouse_ready_datasets.md` and `config/warehouse_schemas.yml`.
 
+## Milestone 5 - Redshift + dbt foundation
+Connect warehouse-ready local CSVs to S3, Redshift raw tables, and dbt staging views. No final scoring or dashboards in this milestone.
+
+Commands (dry-run first):
+- `python ingestion/upload_warehouse_ready_to_s3.py --dry-run --dataset all`
+- `python ingestion/init_redshift_raw_schema.py --dry-run`
+- `python ingestion/load_s3_to_redshift_raw.py --dry-run --dataset all`
+- `dbt parse --project-dir dbt_transit_equity --profiles-dir dbt_transit_equity`
+
+Documentation: `docs/redshift_dbt_foundation.md`, `docs/s3_bucket_structure.md`.
+
+Copy `dbt_transit_equity/profiles.yml.example` to `profiles.yml` locally only. Never commit credentials.
+
 ## Known limitations
 - GTFS-Realtime snapshots are sampled observations, not complete operational records.
 - Feed coverage and schema quality can vary by operator and time.

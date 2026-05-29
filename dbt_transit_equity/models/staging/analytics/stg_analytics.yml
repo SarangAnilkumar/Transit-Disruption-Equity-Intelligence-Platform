@@ -1,0 +1,11 @@
+version: 2
+
+models:
+  - name: stg_sa2_disruption_observations_base
+    columns:
+      - name: sa2_code
+        tests: [not_null]
+      - name: snapshot_date
+        tests: [not_null]
+      - name: observation_count
+        tests: [not_null]

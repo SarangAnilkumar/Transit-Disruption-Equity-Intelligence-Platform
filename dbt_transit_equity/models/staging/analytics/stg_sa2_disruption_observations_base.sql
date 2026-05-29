@@ -1,0 +1,20 @@
+select
+    snapshot_date,
+    snapshot_hour::integer as snapshot_hour,
+    sa2_code,
+    sa2_name,
+    observation_count::integer as observation_count,
+    distinct_trip_count::integer as distinct_trip_count,
+    distinct_stop_count::integer as distinct_stop_count,
+    delayed_observation_count::integer as delayed_observation_count,
+    avg_arrival_delay_seconds::decimal(12, 4) as avg_arrival_delay_seconds,
+    avg_departure_delay_seconds::decimal(12, 4) as avg_departure_delay_seconds,
+    max_arrival_delay_seconds::decimal(12, 4) as max_arrival_delay_seconds,
+    max_departure_delay_seconds::decimal(12, 4) as max_departure_delay_seconds,
+    unmatched_stop_observation_count::integer as unmatched_stop_observation_count,
+    warehouse_dataset,
+    source_file,
+    prepared_at::timestamp as prepared_at,
+    load_batch_id,
+    loaded_at::timestamp as loaded_at
+from {{ source('raw', 'raw_sa2_disruption_observations_base') }}

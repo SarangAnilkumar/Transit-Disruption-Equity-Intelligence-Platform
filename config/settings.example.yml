@@ -51,3 +51,19 @@ analytics:
 warehouse:
   output_dir: data/processed/warehouse_ready
   schema_path: config/warehouse_schemas.yml
+
+aws:
+  region: ap-southeast-2
+  warehouse_ready_prefix: transit-equity/warehouse_ready
+  raw_prefix: transit-equity/raw
+  dbt_artifacts_prefix: transit-equity/dbt_artifacts
+
+redshift:
+  schema_raw: raw
+  schema_staging: staging
+  port: 5439
+
+dbt:
+  project_dir: dbt_transit_equity
+  profiles_dir: dbt_transit_equity
+  target: dev

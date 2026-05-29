@@ -1,0 +1,21 @@
+select
+    feed_name,
+    snapshot_timestamp::timestamp as snapshot_timestamp,
+    entity_id,
+    trip_id,
+    route_id,
+    start_time,
+    start_date,
+    schedule_relationship,
+    stop_sequence::integer as stop_sequence,
+    stop_id,
+    arrival_delay_seconds::integer as arrival_delay_seconds,
+    arrival_time::timestamp as arrival_time,
+    departure_delay_seconds::integer as departure_delay_seconds,
+    departure_time::timestamp as departure_time,
+    warehouse_dataset,
+    source_file,
+    prepared_at::timestamp as prepared_at,
+    load_batch_id,
+    loaded_at::timestamp as loaded_at
+from {{ source('raw', 'raw_gtfs_trip_updates') }}
