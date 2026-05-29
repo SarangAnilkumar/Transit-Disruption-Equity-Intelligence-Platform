@@ -130,6 +130,15 @@ def aggregate_route_sa2(
 ) -> pd.DataFrame:
     """Build route-to-SA2 coverage aggregation."""
     stop_times = stop_times_df.copy()
+    stop_times["stop_id"] = stop_times["stop_id"].astype("string")
+    stop_times["trip_id"] = stop_times["trip_id"].astype("string")
+    trips_df = trips_df.copy()
+    trips_df["trip_id"] = trips_df["trip_id"].astype("string")
+    trips_df["route_id"] = trips_df["route_id"].astype("string")
+    routes_df = routes_df.copy()
+    routes_df["route_id"] = routes_df["route_id"].astype("string")
+    mapping_df = mapping_df.copy()
+    mapping_df["stop_id"] = mapping_df["stop_id"].astype("string")
     stop_times["stop_sequence"] = pd.to_numeric(stop_times["stop_sequence"], errors="coerce")
     joined = (
         stop_times.merge(trips_df[["trip_id", "route_id"]], on="trip_id", how="left")
@@ -163,6 +172,9 @@ def aggregate_sa2_disruption(
 ) -> tuple[pd.DataFrame, dict[str, Any]]:
     """Aggregate parsed trip updates to SA2 snapshot-date/hour grain."""
     updates = trip_updates_df.copy()
+    updates["stop_id"] = updates["stop_id"].astype("string")
+    mapping_df = mapping_df.copy()
+    mapping_df["stop_id"] = mapping_df["stop_id"].astype("string")
     updates["snapshot_timestamp"] = pd.to_datetime(updates["snapshot_timestamp"], errors="coerce", utc=True)
     updates["arrival_delay_seconds"] = pd.to_numeric(updates["arrival_delay_seconds"], errors="coerce")
     updates["departure_delay_seconds"] = pd.to_numeric(updates["departure_delay_seconds"], errors="coerce")

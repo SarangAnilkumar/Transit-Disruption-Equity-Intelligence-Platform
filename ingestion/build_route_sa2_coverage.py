@@ -62,7 +62,7 @@ def main() -> int:
             )
         routes_df = pd.read_csv(routes_path)
         trips_df = pd.read_csv(trips_path)
-        stop_times_df = pd.read_csv(stop_times_path)
+        stop_times_df = pd.read_csv(stop_times_path, low_memory=False)
         mapping_df = pd.read_csv(mapping_path)
 
         coverage = aggregate_route_sa2(routes_df, trips_df, stop_times_df, mapping_df)
