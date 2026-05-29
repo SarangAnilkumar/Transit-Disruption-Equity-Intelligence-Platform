@@ -127,7 +127,7 @@ Primary outputs (local, gitignored):
 Documentation: `docs/warehouse_ready_datasets.md` and `config/warehouse_schemas.yml`.
 
 ## Milestone 5 - Redshift + dbt foundation
-Connect warehouse-ready local CSVs to S3, Redshift raw tables, and dbt staging views. No final scoring or dashboards in this milestone.
+Connect warehouse-ready local CSVs to S3, Redshift `raw_data` tables (schema name avoids Redshift reserved word `RAW`), and dbt staging views. No final scoring or dashboards in this milestone.
 
 Commands (dry-run first):
 - `python ingestion/upload_warehouse_ready_to_s3.py --dry-run --dataset all`
