@@ -1,0 +1,398 @@
+# Canonical warehouse-ready dataset contracts for local CSV outputs and future Redshift raw loads.
+# Metadata columns (warehouse_dataset, source_file, prepared_at, load_batch_id) are appended at build time.
+
+metadata_columns:
+  - warehouse_dataset
+  - source_file
+  - prepared_at
+  - load_batch_id
+
+datasets:
+  gtfs_stops:
+    dataset_name: gtfs_stops
+    domain: gtfs_static
+    grain: one row per stop
+    natural_key: [stop_id]
+    required_columns:
+      - stop_id
+      - stop_name
+      - stop_lat
+      - stop_lon
+    column_types:
+      stop_id: string
+      stop_name: string
+      stop_lat: float
+      stop_lon: float
+      location_type: integer
+      parent_station: string
+      wheelchair_boarding: integer
+      zone_id: string
+    nullable_columns:
+      - location_type
+      - parent_station
+      - wheelchair_boarding
+      - zone_id
+    timestamp_columns: []
+    source_files:
+      - data/processed/gtfs_static/load_date=*/stops.txt
+    output_format: csv
+    future_redshift_table: raw_gtfs_stops
+    allow_empty: false
+
+  gtfs_routes:
+    dataset_name: gtfs_routes
+    domain: gtfs_static
+    grain: one row per route
+    natural_key: [route_id]
+    required_columns:
+      - route_id
+      - route_short_name
+      - route_long_name
+      - route_type
+    column_types:
+      route_id: string
+      route_short_name: string
+      route_long_name: string
+      route_type: integer
+      agency_id: string
+      route_color: string
+      route_text_color: string
+    nullable_columns:
+      - agency_id
+      - route_color
+      - route_text_color
+    timestamp_columns: []
+    source_files:
+      - data/processed/gtfs_static/load_date=*/routes.txt
+    output_format: csv
+    future_redshift_table: raw_gtfs_routes
+    allow_empty: false
+
+  gtfs_trips:
+    dataset_name: gtfs_trips
+    domain: gtfs_static
+    grain: one row per trip
+    natural_key: [trip_id]
+    required_columns:
+      - trip_id
+      - route_id
+      - service_id
+    column_types:
+      trip_id: string
+      route_id: string
+      service_id: string
+      trip_headsign: string
+      direction_id: integer
+      shape_id: string
+      block_id: string
+      wheelchair_accessible: integer
+      bikes_allowed: integer
+    nullable_columns:
+      - trip_headsign
+      - direction_id
+      - shape_id
+      - block_id
+      - wheelchair_accessible
+      - bikes_allowed
+    timestamp_columns: []
+    source_files:
+      - data/processed/gtfs_static/load_date=*/trips.txt
+    output_format: csv
+    future_redshift_table: raw_gtfs_trips
+    allow_empty: false
+
+  gtfs_stop_times:
+    dataset_name: gtfs_stop_times
+    domain: gtfs_static
+    grain: one row per trip stop sequence
+    natural_key: [trip_id, stop_sequence]
+    required_columns:
+      - trip_id
+      - stop_id
+      - stop_sequence
+      - arrival_time
+      - departure_time
+    column_types:
+      trip_id: string
+      stop_id: string
+      stop_sequence: integer
+      arrival_time: string
+      departure_time: string
+      pickup_type: integer
+      drop_off_type: integer
+      stop_headsign: string
+      shape_dist_traveled: float
+    nullable_columns:
+      - pickup_type
+      - drop_off_type
+      - stop_headsign
+      - shape_dist_traveled
+    timestamp_columns: []
+    source_files:
+      - data/processed/gtfs_static/load_date=*/stop_times.txt
+    output_format: csv
+    future_redshift_table: raw_gtfs_stop_times
+    allow_empty: false
+
+  gtfs_trip_updates:
+    dataset_name: gtfs_trip_updates
+    domain: gtfs_realtime
+    grain: one row per trip update stop observation
+    natural_key: [entity_id, stop_sequence]
+    required_columns:
+      - feed_name
+      - snapshot_timestamp
+      - entity_id
+    column_types:
+      feed_name: string
+      snapshot_timestamp: timestamp
+      entity_id: string
+      trip_id: string
+      route_id: string
+      start_time: string
+      start_date: string
+      schedule_relationship: string
+      stop_sequence: integer
+      stop_id: string
+      arrival_delay_seconds: integer
+      arrival_time: timestamp
+      departure_delay_seconds: integer
+      departure_time: timestamp
+    nullable_columns:
+      - trip_id
+      - route_id
+      - start_time
+      - start_date
+      - schedule_relationship
+      - stop_sequence
+      - stop_id
+      - arrival_delay_seconds
+      - arrival_time
+      - departure_delay_seconds
+      - departure_time
+    timestamp_columns:
+      - snapshot_timestamp
+      - arrival_time
+      - departure_time
+    source_files:
+      - data/processed/gtfs_realtime/feed=trip_updates/**/parsed.csv
+    output_format: csv
+    future_redshift_table: raw_gtfs_trip_updates
+    allow_empty: true
+
+  gtfs_service_alerts:
+    dataset_name: gtfs_service_alerts
+    domain: gtfs_realtime
+    grain: one row per service alert entity
+    natural_key: [entity_id]
+    required_columns:
+      - feed_name
+      - snapshot_timestamp
+      - entity_id
+    column_types:
+      feed_name: string
+      snapshot_timestamp: timestamp
+      entity_id: string
+      cause: string
+      effect: string
+      active_period_start: timestamp
+      active_period_end: timestamp
+      informed_route_id: string
+      informed_stop_id: string
+      informed_trip_id: string
+      header_text: string
+      description_text: string
+    nullable_columns:
+      - cause
+      - effect
+      - active_period_start
+      - active_period_end
+      - informed_route_id
+      - informed_stop_id
+      - informed_trip_id
+      - header_text
+      - description_text
+    timestamp_columns:
+      - snapshot_timestamp
+      - active_period_start
+      - active_period_end
+    source_files:
+      - data/processed/gtfs_realtime/feed=service_alerts/**/parsed.csv
+    output_format: csv
+    future_redshift_table: raw_gtfs_service_alerts
+    allow_empty: true
+
+  stops_sa2_mapping:
+    dataset_name: stops_sa2_mapping
+    domain: geospatial
+    grain: one row per stop
+    natural_key: [stop_id]
+    required_columns:
+      - stop_id
+      - stop_name
+      - stop_lat
+      - stop_lon
+      - sa2_code
+      - sa2_name
+      - is_matched
+    column_types:
+      stop_id: string
+      stop_name: string
+      stop_lat: float
+      stop_lon: float
+      sa2_code: string
+      sa2_name: string
+      mapping_method: string
+      is_matched: boolean
+      mapping_created_at: timestamp
+      source_stops_path: string
+      source_sa2_path: string
+    nullable_columns:
+      - sa2_code
+      - sa2_name
+      - mapping_method
+      - mapping_created_at
+      - source_stops_path
+      - source_sa2_path
+    timestamp_columns:
+      - mapping_created_at
+    source_files:
+      - data/processed/geospatial/stops_sa2_mapping.csv
+    output_format: csv
+    future_redshift_table: raw_stops_sa2_mapping
+    allow_empty: false
+
+  route_sa2_coverage:
+    dataset_name: route_sa2_coverage
+    domain: geospatial
+    grain: one row per route and SA2
+    natural_key: [route_id, sa2_code]
+    required_columns:
+      - route_id
+      - sa2_code
+      - sa2_name
+    column_types:
+      route_id: string
+      route_short_name: string
+      route_long_name: string
+      route_type: integer
+      sa2_code: string
+      sa2_name: string
+      stop_count_in_sa2: integer
+      trip_count_serving_sa2: integer
+      first_stop_sequence: integer
+      last_stop_sequence: integer
+      coverage_created_at: timestamp
+    nullable_columns:
+      - route_short_name
+      - route_long_name
+      - route_type
+      - coverage_created_at
+    timestamp_columns:
+      - coverage_created_at
+    source_files:
+      - data/processed/geospatial/route_sa2_coverage.csv
+    output_format: csv
+    future_redshift_table: raw_route_sa2_coverage
+    allow_empty: false
+
+  sa2_disruption_observations_base:
+    dataset_name: sa2_disruption_observations_base
+    domain: analytics
+    grain: one row per SA2 snapshot date and hour
+    natural_key: [snapshot_date, snapshot_hour, sa2_code]
+    required_columns:
+      - snapshot_date
+      - snapshot_hour
+      - sa2_code
+      - observation_count
+    column_types:
+      snapshot_date: string
+      snapshot_hour: integer
+      sa2_code: string
+      sa2_name: string
+      observation_count: integer
+      distinct_trip_count: integer
+      distinct_stop_count: integer
+      delayed_observation_count: integer
+      avg_arrival_delay_seconds: float
+      avg_departure_delay_seconds: float
+      max_arrival_delay_seconds: float
+      max_departure_delay_seconds: float
+      unmatched_stop_observation_count: integer
+    nullable_columns:
+      - sa2_name
+      - distinct_trip_count
+      - distinct_stop_count
+      - delayed_observation_count
+      - avg_arrival_delay_seconds
+      - avg_departure_delay_seconds
+      - max_arrival_delay_seconds
+      - max_departure_delay_seconds
+      - unmatched_stop_observation_count
+    timestamp_columns: []
+    source_files:
+      - data/processed/analytics/sa2_disruption_observations_base.csv
+    output_format: csv
+    future_redshift_table: raw_sa2_disruption_observations_base
+    allow_empty: true
+
+  seifa_sa2_ready:
+    dataset_name: seifa_sa2_ready
+    domain: equity
+    grain: one row per SA2
+    natural_key: [sa2_code]
+    required_columns:
+      - sa2_code
+      - sa2_name
+      - seifa_release_year
+      - irsd_score
+    column_types:
+      sa2_code: string
+      sa2_name: string
+      seifa_release_year: integer
+      irsd_score: float
+      irsd_decile: float
+      irsd_percentile: float
+      source_file: string
+      prepared_at: timestamp
+    nullable_columns:
+      - irsd_decile
+      - irsd_percentile
+      - source_file
+      - prepared_at
+    timestamp_columns:
+      - prepared_at
+    source_files:
+      - data/processed/equity/seifa_sa2_ready.csv
+    output_format: csv
+    future_redshift_table: raw_seifa_sa2
+    allow_empty: true
+
+dataset_groups:
+  gtfs_static:
+    - gtfs_stops
+    - gtfs_routes
+    - gtfs_trips
+    - gtfs_stop_times
+  gtfs_realtime:
+    - gtfs_trip_updates
+    - gtfs_service_alerts
+  geospatial:
+    - stops_sa2_mapping
+    - route_sa2_coverage
+  equity:
+    - seifa_sa2_ready
+  analytics:
+    - sa2_disruption_observations_base
+  all:
+    - gtfs_stops
+    - gtfs_routes
+    - gtfs_trips
+    - gtfs_stop_times
+    - gtfs_trip_updates
+    - gtfs_service_alerts
+    - stops_sa2_mapping
+    - route_sa2_coverage
+    - seifa_sa2_ready
+    - sa2_disruption_observations_base

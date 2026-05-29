@@ -47,3 +47,7 @@ equity:
 
 analytics:
   output_dir: data/processed/analytics
+
+warehouse:
+  output_dir: data/processed/warehouse_ready
+  schema_path: config/warehouse_schemas.yml

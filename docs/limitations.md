@@ -8,3 +8,6 @@
 - Disruption exposure is a derived analytical proxy, not a direct service quality ground truth.
 - MVP coverage is metro trains only; buses and trams are deferred to later phases.
 - Text quality and field completeness in service alerts can vary significantly over time.
+- Warehouse-ready outputs are regenerated locally and gitignored; manifests and reports must be rebuilt on each machine.
+- Milestone 4 validates schemas and row counts locally only; Redshift COPY and dbt execution are deferred to Milestone 5.
+- Optional datasets (GTFS-R snapshots, SEIFA) may be empty until source processed files exist.

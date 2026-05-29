@@ -109,6 +109,23 @@ Primary outputs:
 - `data/processed/equity/seifa_sa2_ready.csv` (if SEIFA source file is supplied)
 - `data/processed/analytics/sa2_disruption_observations_base.csv` (if parsed trip updates exist)
 
+## Milestone 4 - Local warehouse-ready datasets
+Standardise processed outputs into load-ready CSV contracts aligned with Redshift raw DDL. No AWS, S3, or COPY execution in this milestone.
+
+Commands:
+- `python ingestion/build_warehouse_ready_datasets.py --dataset all`
+- `python ingestion/run_local_quality_checks.py --dataset all`
+- `python ingestion/reconcile_processed_outputs.py`
+- `pytest -q`
+
+Primary outputs (local, gitignored):
+- `data/processed/warehouse_ready/<domain>/<dataset>.csv`
+- `data/processed/warehouse_ready/manifests/warehouse_manifest_<batch_id>.json`
+- `data/processed/warehouse_ready/quality_reports/local_quality_summary_<batch_id>.json`
+- `data/processed/warehouse_ready/quality_reports/reconciliation_report_<batch_id>.json`
+
+Documentation: `docs/warehouse_ready_datasets.md` and `config/warehouse_schemas.yml`.
+
 ## Known limitations
 - GTFS-Realtime snapshots are sampled observations, not complete operational records.
 - Feed coverage and schema quality can vary by operator and time.
