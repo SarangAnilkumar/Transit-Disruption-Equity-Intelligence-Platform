@@ -1,0 +1,15 @@
+version: 2
+
+models:
+  - name: int_transport_equity_score_components
+    description: Transparent v1 scoring components combining disruption exposure and equity context.
+    columns:
+      - name: snapshot_date
+        tests: [not_null]
+      - name: sa2_code
+        tests: [not_null]
+      - name: score_formula_version
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['v1_transparent_weighted_proxy']

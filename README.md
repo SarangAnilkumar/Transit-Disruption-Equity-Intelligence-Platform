@@ -137,7 +137,35 @@ Commands (dry-run first):
 
 Documentation: `docs/redshift_dbt_foundation.md`, `docs/s3_bucket_structure.md`.
 
+Milestone 5 evidence screenshots: [`docs/assets/dbt_lineage/`](docs/assets/dbt_lineage/).
+
 Copy `dbt_transit_equity/profiles.yml.example` to `profiles.yml` locally only. Never commit credentials.
+
+## Milestone 6 - Disruption exposure, equity scoring & portfolio delivery
+
+Builds the analytical value layer: intermediate dbt models, transparent disruption-equity scoring marts, insight queries, and portfolio documentation.
+
+Commands:
+```bash
+set -a && source .env && set +a
+dbt run --project-dir dbt_transit_equity --profiles-dir dbt_transit_equity
+dbt test --project-dir dbt_transit_equity --profiles-dir dbt_transit_equity
+dbt docs generate --project-dir dbt_transit_equity --profiles-dir dbt_transit_equity
+python ingestion/export_milestone_6_insights.py
+```
+
+Key outputs:
+- **Marts:** `marts.mart_transport_disruption_equity_score`, `mart_route_disruption_summary`, `mart_disruption_hotspots`, `mart_sa2_daily_equity_summary`
+- **Scoring doc:** `docs/transport_disruption_equity_scoring.md`
+- **Insights:** `docs/insights/` (exported CSVs + summary)
+- **Portfolio story:** `docs/final_project_story.md`, `docs/resume_bullets.md`, `docs/interview_explanation.md`
+- **Evidence:** `docs/assets/milestone_6/`
+
+Schema note: `macros/generate_schema_name.sql` builds into clean `staging`, `intermediate`, and `marts` schemas (legacy `staging_staging` views may remain until dropped manually).
+
+## Project status
+
+**Milestones 1–6 complete.** Live Redshift validation: raw tables loaded, dbt staging/intermediate/marts built, tests passing, docs and lineage screenshots captured.
 
 ## Known limitations
 - GTFS-Realtime snapshots are sampled observations, not complete operational records.

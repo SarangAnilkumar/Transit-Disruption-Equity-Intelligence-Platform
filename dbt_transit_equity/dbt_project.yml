@@ -31,3 +31,21 @@ models:
         +tags: ["staging", "analytics"]
       equity:
         +tags: ["staging", "equity"]
+    intermediate:
+      +schema: intermediate
+      transport:
+        +tags: ["intermediate", "transport"]
+      geospatial:
+        +tags: ["intermediate", "geospatial"]
+      equity:
+        +tags: ["intermediate", "equity"]
+      scoring:
+        +tags: ["intermediate", "scoring"]
+    marts:
+      +schema: marts
+      transport:
+        +tags: ["marts", "transport"]
+      equity:
+        +tags: ["marts", "equity"]
+      reporting:
+        +tags: ["marts", "reporting"]

@@ -1,0 +1,25 @@
+route_id,route_short_name,route_long_name,total_observations,total_delayed_observations,total_disruption_alerts,peak_delay_seconds
+aus:vic:vic-02-BEG:,Belgrave,Belgrave - City,493,108,0,660
+aus:vic:vic-02-SUY:,Sunbury,Sunbury - City,578,87,0,1080
+aus:vic:vic-02-LIL:,Lilydale,Lilydale - City,294,83,0,600
+aus:vic:vic-02-HBE:,Hurstbridge,Hurstbridge - City,428,43,0,720
+aus:vic:vic-02-GWY:,Glen Waverley,Glen Waverley - City,256,39,0,600
+aus:vic:vic-02-MDD:,Mernda,Mernda - City,604,39,0,420
+aus:vic:vic-02-FKN:,Frankston,Frankston - City,763,7,0,360
+aus:vic:vic-02-PKM:,Pakenham,Pakenham - City,440,4,0,480
+aus:vic:vic-02-CGB:,Craigieburn,Craigieburn - City,401,2,0,540
+aus:vic:vic-02-WER:,Werribee,Werribee - City,300,2,0,360
+aus:vic:vic-02-STY-R:,Replacement Bus,Stony Point - Frankston,0,0,0,
+aus:vic:vic-02-WIL-R:,Replacement Bus,Williamstown - City,0,0,0,
+aus:vic:vic-02-BEG-R:,Replacement Bus,Belgrave - City,0,0,0,
+aus:vic:vic-02-ALM:,Alamein,Alamein - City,114,0,0,240
+aus:vic:vic-02-WIL:,Williamstown,Williamstown - City,102,0,0,240
+aus:vic:vic-02-FKN-R:,Replacement Bus,Frankston - City,0,0,0,
+aus:vic:vic-02-UFD:,Upfield,Upfield - City,184,0,0,240
+aus:vic:vic-02-CBE:,Cranbourne,Cranbourne - City,239,0,0,240
+aus:vic:vic-02-CBE-R:,Replacement Bus,Cranbourne - City,0,0,0,
+aus:vic:vic-02-SUY-R:,Replacement Bus,Sunbury - City,0,0,0,
+aus:vic:vic-02-WER-R:,Replacement Bus,Werribee - City,0,0,0,
+aus:vic:vic-02-STY:,Stony Point,Stony Point - Frankston,2,0,0,
+aus:vic:vic-02-SHM:,Sandringham,Sandringham - City,247,0,0,300
+aus:vic:vic-02-PKM-R:,Replacement Bus,Pakenham - City,0,0,0,

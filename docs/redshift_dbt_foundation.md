@@ -115,7 +115,15 @@ dbt docs generate --project-dir dbt_transit_equity --profiles-dir dbt_transit_eq
 dbt docs serve --project-dir dbt_transit_equity --profiles-dir dbt_transit_equity
 ```
 
-## Staging models
+## Schema naming (`generate_schema_name`)
+
+dbt uses `macros/generate_schema_name.sql` so custom schemas resolve to clean names:
+
+- `staging` (not `staging_staging`)
+- `intermediate`
+- `marts`
+
+Legacy views under `staging_staging` from earlier runs are not dropped automatically. New `dbt run` builds into the clean schemas above.
 
 Views in `staging` schema:
 

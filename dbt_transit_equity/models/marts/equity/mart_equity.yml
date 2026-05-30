@@ -1,0 +1,22 @@
+version: 2
+
+models:
+  - name: mart_transport_disruption_equity_score
+    description: Final SA2/date/hour disruption equity impact mart (transparent proxy, not official KPI).
+    columns:
+      - name: snapshot_date
+        tests: [not_null]
+      - name: sa2_code
+        tests: [not_null]
+      - name: equity_impact_score
+        description: Composite score 0-100; higher = greater disruption-equity concern in snapshot window.
+      - name: equity_risk_band
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['very_high', 'high', 'moderate', 'low', 'minimal']
+      - name: score_formula_version
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['v1_transparent_weighted_proxy']

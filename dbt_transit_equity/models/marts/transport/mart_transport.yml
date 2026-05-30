@@ -1,0 +1,10 @@
+version: 2
+
+models:
+  - name: mart_route_disruption_summary
+    description: Route daily disruption summary mart for portfolio route-level insights.
+    columns:
+      - name: service_date
+        tests: [not_null]
+      - name: route_id
+        tests: [not_null]

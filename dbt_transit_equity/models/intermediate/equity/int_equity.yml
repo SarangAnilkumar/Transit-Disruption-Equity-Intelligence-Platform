@@ -1,0 +1,10 @@
+version: 2
+
+models:
+  - name: int_sa2_equity_context
+    description: SA2-level SEIFA disadvantage and transport network access proxy.
+    columns:
+      - name: sa2_code
+        tests: [not_null, unique]
+      - name: disadvantage_weight
+        description: Higher values indicate greater relative disadvantage (0-1 scale).

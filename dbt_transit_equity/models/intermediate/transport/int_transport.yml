@@ -1,0 +1,51 @@
+version: 2
+
+models:
+  - name: int_trip_delay_events
+    description: One row per GTFS-R trip update observation with delay flags and severity bands.
+    columns:
+      - name: snapshot_timestamp
+        tests: [not_null]
+      - name: snapshot_date
+        tests: [not_null]
+      - name: trip_id
+        tests: [not_null]
+      - name: delay_severity_band
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['early_or_on_time', 'minor_delay', 'moderate_delay', 'major_delay']
+
+  - name: int_service_alert_events
+    description: One row per service alert entity with disruption classification.
+    columns:
+      - name: entity_id
+        tests: [not_null]
+      - name: snapshot_timestamp
+        tests: [not_null]
+      - name: alert_severity_band
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['critical', 'high', 'moderate', 'unknown', 'informational']
+
+  - name: int_route_daily_disruption
+    description: Route-level daily disruption aggregates from trip delays and service alerts.
+    columns:
+      - name: service_date
+        tests: [not_null]
+      - name: route_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_gtfs_routes')
+                field: route_id
+
+  - name: int_sa2_disruption_exposure
+    description: SA2/date/hour disruption exposure proxy from observed GTFS-R snapshots.
+    columns:
+      - name: snapshot_date
+        tests: [not_null]
+      - name: sa2_code
+        tests: [not_null]

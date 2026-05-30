@@ -1,0 +1,17 @@
+version: 2
+
+models:
+  - name: mart_disruption_hotspots
+    description: Reporting view of SA2 disruption-equity hotspots ordered by impact score in queries.
+    columns:
+      - name: sa2_code
+        tests: [not_null]
+      - name: equity_impact_score
+
+  - name: mart_sa2_daily_equity_summary
+    description: Daily SA2 rollup of hourly disruption equity scores.
+    columns:
+      - name: snapshot_date
+        tests: [not_null]
+      - name: sa2_code
+        tests: [not_null]
