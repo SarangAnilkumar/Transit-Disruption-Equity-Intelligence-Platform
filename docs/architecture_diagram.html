@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transit Disruption Equity Intelligence Platform — Architecture Diagram</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" integrity="sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js" integrity="sha384-en/ztfPSRkGfME4KIm05joYXynqzUgbsG5nMrj/xEFAHXkeZfO3yMK8QQ+mP7p1/" crossorigin="anonymous"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      background: #020617;
+      min-height: 100vh;
+      padding: 1.5rem;
+      color: white;
+    }
+    .container#report-container {
+      max-width: 1380px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    @media screen {
+      .container#report-container {
+        width: max-content;
+        max-width: none;
+      }
+    }
+    #architecture-export {
+      display: block;
+      width: max-content;
+      max-width: none;
+    }
+    #architecture-export .diagram-container {
+      overflow: visible;
+    }
+    #architecture-export .diagram-svg {
+      width: 1320px;
+      min-width: 1320px;
+      max-width: none;
+      display: block;
+    }
+    .page-supplement {
+      display: block;
+      width: 1320px;
+      max-width: 1320px;
+      margin-top: 2rem;
+      clear: both;
+      position: relative;
+      z-index: 1;
+    }
+    .header { margin-bottom: 1rem; }
+    .header-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.35rem;
+      flex-wrap: wrap;
+    }
+    .pulse-dot {
+      width: 12px; height: 12px;
+      background: #34d399;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+      flex-shrink: 0;
+    }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    h1 { font-size: 1.45rem; font-weight: 700; letter-spacing: -0.025em; line-height: 1.25; }
+    .subtitle { color: #94a3b8; font-size: 0.875rem; margin-left: 1.75rem; line-height: 1.4; }
+    .diagram-container {
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 1rem;
+      border: 1px solid #1e293b;
+      padding: 1rem 1.25rem;
+      overflow-x: auto;
+    }
+    svg { width: 100%; display: block; }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+      margin-top: 0;
+    }
+    @media (max-width: 1100px) { .cards { grid-template-columns: 1fr; } }
+    .card {
+      background: rgba(15, 23, 42, 0.5);
+      border-radius: 0.75rem;
+      border: 1px solid #1e293b;
+      padding: 1.25rem;
+    }
+    .card-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .card-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .card-dot.cyan { background: #22d3ee; }
+    .card-dot.emerald { background: #34d399; }
+    .card-dot.violet { background: #a78bfa; }
+    .card-dot.amber { background: #fbbf24; }
+    .card h3 { font-size: 0.875rem; font-weight: 600; }
+    .card ul { list-style: none; color: #94a3b8; font-size: 0.75rem; line-height: 1.45; }
+    .card li { margin-bottom: 0.375rem; }
+    .footer {
+      text-align: center;
+      margin-top: 1.25rem;
+      color: #475569;
+      font-size: 0.75rem;
+    }
+    .toolbar {
+      display: flex;
+      gap: 0.5rem;
+      margin-left: auto;
+      flex-shrink: 0;
+      align-items: center;
+    }
+    .toolbar-toggle {
+      background: transparent;
+      border: none;
+      color: #475569;
+      cursor: pointer;
+      font-size: 1.25rem;
+      line-height: 1;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.375rem;
+    }
+    .toolbar-toggle:hover { color: #94a3b8; background: rgba(30, 41, 59, 0.5); }
+    .toolbar-actions { display: none; gap: 0.5rem; }
+    .toolbar.expanded .toolbar-actions { display: flex; }
+    .toolbar-actions button {
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid #334155;
+      color: #94a3b8;
+      padding: 0.375rem 0.75rem;
+      border-radius: 0.375rem;
+      font-family: inherit;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+    .toolbar-actions button:hover {
+      background: rgba(51, 65, 85, 0.8);
+      color: white;
+    }
+    @media print {
+      body { background: #020617; padding: 1rem; }
+      .toolbar { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="report-container">
+
+    <div id="architecture-export">
+      <div class="header">
+        <div class="header-row">
+          <div class="pulse-dot"></div>
+          <h1>Transit Disruption Equity Intelligence Platform</h1>
+          <div class="toolbar">
+            <div class="toolbar-actions">
+              <button onclick="copyAsImage(this, 'architecture-export')">📋 Copy</button>
+              <button onclick="downloadPNG(this, 'architecture-export')">🖼️ PNG</button>
+              <button onclick="downloadPNG(this, 'report-container')" title="Full page with cards">🖼️ Full</button>
+              <button onclick="downloadPDF(this, 'architecture-export')">📄 PDF</button>
+              <button onclick="copyAsImage(this, 'report-container')" title="Full page with cards">📋 All</button>
+            </div>
+            <button class="toolbar-toggle" onclick="this.parentElement.classList.toggle('expanded')" title="Export options" aria-label="Export options">⋯</button>
+          </div>
+        </div>
+        <p class="subtitle">Melbourne metro trains · GTFS static + GTFS-R → geospatial equity pipeline → S3 → Redshift → dbt marts → analyst insights</p>
+      </div>
+
+      <div class="diagram-container">
+        <svg class="diagram-svg" viewBox="0 0 1320 620" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#64748b" />
+            </marker>
+            <marker id="arrowhead-cyan" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#22d3ee" />
+            </marker>
+            <marker id="arrowhead-amber" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#fbbf24" />
+            </marker>
+            <marker id="arrowhead-violet" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+              <polygon points="0 0, 10 3.5, 0 7" fill="#a78bfa" />
+            </marker>
+            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+            </pattern>
+            <clipPath id="clip-ext"><rect x="20" y="94" width="176" height="176" rx="6"/></clipPath>
+            <clipPath id="clip-py"><rect x="208" y="78" width="232" height="212" rx="6"/></clipPath>
+            <clipPath id="clip-s3"><rect x="472" y="84" width="214" height="204" rx="6"/></clipPath>
+            <clipPath id="clip-rs"><rect x="700" y="84" width="214" height="204" rx="6"/></clipPath>
+            <clipPath id="clip-ana"><rect x="944" y="78" width="272" height="212" rx="6"/></clipPath>
+            <clipPath id="clip-port"><rect x="1000" y="302" width="200" height="96" rx="6"/></clipPath>
+            <clipPath id="clip-metrics"><rect x="24" y="448" width="1272" height="60" rx="8"/></clipPath>
+            <clipPath id="clip-future"><rect x="24" y="520" width="1272" height="88" rx="8"/></clipPath>
+          </defs>
+
+          <rect width="100%" height="100%" fill="url(#grid)" />
+
+          <!-- Pipeline arrows (behind boxes), flow center y=182 -->
+          <line x1="196" y1="182" x2="206" y2="182" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)"/>
+          <text x="201" y="174" fill="#64748b" font-size="7" text-anchor="middle">fetch</text>
+          <line x1="440" y1="182" x2="450" y2="182" stroke="#34d399" stroke-width="2" marker-end="url(#arrowhead)"/>
+          <text x="445" y="174" fill="#6ee7b7" font-size="7" text-anchor="middle">CSV</text>
+          <line x1="686" y1="182" x2="696" y2="182" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrowhead-amber)"/>
+          <text x="691" y="174" fill="#fcd34d" font-size="7" text-anchor="middle">COPY</text>
+          <line x1="914" y1="182" x2="942" y2="182" stroke="#a78bfa" stroke-width="2" marker-end="url(#arrowhead-violet)"/>
+          <text x="928" y="174" fill="#c4b5fd" font-size="7" text-anchor="middle">marts</text>
+          <line x1="1080" y1="290" x2="1080" y2="300" stroke="#22d3ee" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowhead-cyan)"/>
+          <text x="1092" y="296" fill="#64748b" font-size="7">docs</text>
+
+          <text x="24" y="52" fill="#475569" font-size="8" font-weight="600">DATA FLOW →</text>
+
+          <!-- 1 External -->
+          <rect x="20" y="94" width="176" height="176" rx="6" fill="#0f172a"/>
+          <rect x="20" y="94" width="176" height="176" rx="6" fill="rgba(30, 41, 59, 0.55)" stroke="#94a3b8" stroke-width="1.5"/>
+          <g clip-path="url(#clip-ext)">
+            <text x="108" y="116" fill="#e2e8f0" font-size="10" font-weight="700" text-anchor="middle">External Sources</text>
+            <text x="108" y="134" fill="#cbd5e1" font-size="8" text-anchor="middle">Transport Victoria</text>
+            <text x="108" y="148" fill="#94a3b8" font-size="7.5" text-anchor="middle">GTFS static · GTFS-R</text>
+            <text x="108" y="162" fill="#cbd5e1" font-size="8" text-anchor="middle">ABS · SEIFA · SA2</text>
+            <text x="108" y="176" fill="#64748b" font-size="7.5" text-anchor="middle">Metro trains (MVP)</text>
+            <rect x="44" y="232" width="128" height="22" rx="11" fill="rgba(30, 41, 59, 0.8)" stroke="#64748b" stroke-width="0.8"/>
+            <text x="108" y="247" fill="#94a3b8" font-size="7.5" font-weight="600" text-anchor="middle">PUBLIC APIs</text>
+          </g>
+
+          <!-- 2 Python -->
+          <rect x="208" y="78" width="232" height="212" rx="6" fill="#0f172a"/>
+          <rect x="208" y="78" width="232" height="212" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5"/>
+          <g clip-path="url(#clip-py)">
+            <text x="324" y="100" fill="#34d399" font-size="9.5" font-weight="700" text-anchor="middle">① Python pipeline</text>
+            <text x="324" y="118" fill="#e2e8f0" font-size="7.5" text-anchor="middle">Parse · partition · QA checks</text>
+            <text x="324" y="132" fill="#94a3b8" font-size="7.5" text-anchor="middle">Stop→SA2 · route coverage</text>
+            <text x="324" y="146" fill="#94a3b8" font-size="7.5" text-anchor="middle">SEIFA validation</text>
+            <rect x="220" y="154" width="208" height="44" rx="4" fill="rgba(6, 78, 59, 0.55)" stroke="#34d399" stroke-width="0.8"/>
+            <text x="324" y="172" fill="#6ee7b7" font-size="7.5" font-weight="600" text-anchor="middle">GTFS-R snapshots</text>
+            <text x="324" y="186" fill="#94a3b8" font-size="7" text-anchor="middle">15-min · coverage audit</text>
+            <text x="324" y="208" fill="#94a3b8" font-size="7.5" text-anchor="middle">Warehouse-ready CSVs</text>
+            <rect x="266" y="256" width="116" height="22" rx="11" fill="rgba(6, 78, 59, 0.6)" stroke="#34d399" stroke-width="0.8"/>
+            <text x="324" y="271" fill="#6ee7b7" font-size="7.5" font-weight="600" text-anchor="middle">IMPLEMENTED</text>
+          </g>
+
+          <!-- AWS region -->
+          <rect x="456" y="50" width="472" height="252" rx="12" fill="rgba(251, 191, 36, 0.04)" stroke="#fbbf24" stroke-width="1" stroke-dasharray="8,4"/>
+          <text x="470" y="68" fill="#fbbf24" font-size="9" font-weight="600">AWS · ap-southeast-2</text>
+
+          <!-- 3a S3 -->
+          <rect x="472" y="84" width="214" height="204" rx="6" fill="#0f172a"/>
+          <rect x="472" y="84" width="214" height="204" rx="6" fill="rgba(120, 53, 15, 0.35)" stroke="#fbbf24" stroke-width="1.5"/>
+          <g clip-path="url(#clip-s3)">
+            <text x="579" y="106" fill="#fbbf24" font-size="9.5" font-weight="700" text-anchor="middle">② Amazon S3</text>
+            <text x="579" y="120" fill="#fcd34d" font-size="7.5" text-anchor="middle">transit-equity/</text>
+            <rect x="482" y="128" width="194" height="22" rx="3" fill="#0f172a" stroke="#92400e" stroke-width="0.6"/>
+            <text x="579" y="143" fill="#fde68a" font-size="7" text-anchor="middle">warehouse_ready/</text>
+            <rect x="482" y="152" width="194" height="22" rx="3" fill="#0f172a" stroke="#92400e" stroke-width="0.6"/>
+            <text x="579" y="167" fill="#fde68a" font-size="7" text-anchor="middle">static · realtime · geo</text>
+            <rect x="482" y="176" width="194" height="22" rx="3" fill="#0f172a" stroke="#92400e" stroke-width="0.6"/>
+            <text x="579" y="191" fill="#fde68a" font-size="7" text-anchor="middle">equity · manifests</text>
+            <rect x="482" y="200" width="194" height="22" rx="3" fill="#0f172a" stroke="#92400e" stroke-width="0.6"/>
+            <text x="579" y="215" fill="#fde68a" font-size="7" text-anchor="middle">quality · dbt_artifacts</text>
+            <rect x="519" y="256" width="120" height="22" rx="11" fill="rgba(120, 53, 15, 0.5)" stroke="#fbbf24" stroke-width="0.8"/>
+            <text x="579" y="271" fill="#fbbf24" font-size="7.5" font-weight="600" text-anchor="middle">IMPLEMENTED</text>
+          </g>
+
+          <!-- 3b Redshift -->
+          <rect x="700" y="84" width="214" height="204" rx="6" fill="#0f172a"/>
+          <rect x="700" y="84" width="214" height="204" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+          <g clip-path="url(#clip-rs)">
+            <text x="807" y="106" fill="#a78bfa" font-size="9.5" font-weight="700" text-anchor="middle">③ Redshift + dbt</text>
+            <text x="807" y="122" fill="#94a3b8" font-size="7.5" text-anchor="middle">Serverless · raw_data</text>
+            <text x="807" y="136" fill="#94a3b8" font-size="7.5" text-anchor="middle">COPY · IAM from S3</text>
+            <rect x="712" y="144" width="190" height="56" rx="4" fill="rgba(76, 29, 149, 0.35)" stroke="#7c3aed" stroke-width="0.8"/>
+            <text x="807" y="160" fill="#ddd6fe" font-size="7.5" font-weight="600" text-anchor="middle">dbt transform layers</text>
+            <text x="807" y="174" fill="#c4b5fd" font-size="7" text-anchor="middle">staging → int → marts</text>
+            <text x="807" y="188" fill="#94a3b8" font-size="7" text-anchor="middle">delays · SA2 · equity</text>
+            <text x="807" y="212" fill="#c4b5fd" font-size="7" text-anchor="middle">23 models · 58+ tests</text>
+            <rect x="747" y="256" width="120" height="22" rx="11" fill="rgba(76, 29, 149, 0.5)" stroke="#a78bfa" stroke-width="0.8"/>
+            <text x="807" y="271" fill="#c4b5fd" font-size="7.5" font-weight="600" text-anchor="middle">IMPLEMENTED</text>
+          </g>
+
+          <!-- 4 Analytics -->
+          <rect x="944" y="78" width="272" height="212" rx="6" fill="#0f172a"/>
+          <rect x="944" y="78" width="272" height="212" rx="6" fill="rgba(6, 78, 59, 0.38)" stroke="#34d399" stroke-width="1.5"/>
+          <g clip-path="url(#clip-ana)">
+            <text x="1080" y="100" fill="#34d399" font-size="9.5" font-weight="700" text-anchor="middle">④ Analytics &amp; insights</text>
+            <text x="1080" y="118" fill="#e2e8f0" font-size="7.5" text-anchor="middle">mart_equity_score (primary)</text>
+            <text x="1080" y="132" fill="#94a3b8" font-size="7.5" text-anchor="middle">hotspots · route marts</text>
+            <text x="1080" y="146" fill="#94a3b8" font-size="7.5" text-anchor="middle">SEIFA vs disruption · hourly</text>
+            <text x="1080" y="160" fill="#94a3b8" font-size="7.5" text-anchor="middle">Analyst SQL · CSV · charts</text>
+            <text x="1080" y="178" fill="#6ee7b7" font-size="7.5" font-weight="600" text-anchor="middle">v1 equity proxy (transparent)</text>
+            <rect x="1020" y="256" width="120" height="22" rx="11" fill="rgba(251, 146, 60, 0.25)" stroke="#fb923c" stroke-width="0.8"/>
+            <text x="1080" y="271" fill="#fdba74" font-size="7" font-weight="600" text-anchor="middle">GTFS-R exploratory*</text>
+          </g>
+
+          <!-- 5 Portfolio -->
+          <rect x="1000" y="302" width="200" height="96" rx="6" fill="#0f172a"/>
+          <rect x="1000" y="302" width="200" height="96" rx="6" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+          <g clip-path="url(#clip-port)">
+            <text x="1100" y="324" fill="#22d3ee" font-size="9.5" font-weight="700" text-anchor="middle">⑤ Portfolio evidence</text>
+            <text x="1100" y="342" fill="#94a3b8" font-size="7.5" text-anchor="middle">README · arch · lineage</text>
+            <text x="1100" y="356" fill="#94a3b8" font-size="7.5" text-anchor="middle">Analyst visuals · limits</text>
+            <rect x="1040" y="368" width="120" height="22" rx="11" fill="rgba(8, 51, 68, 0.5)" stroke="#22d3ee" stroke-width="0.8"/>
+            <text x="1100" y="383" fill="#22d3ee" font-size="7.5" font-weight="600" text-anchor="middle">DOCUMENTED</text>
+          </g>
+
+          <!-- Horizontal legend (below portfolio branch) -->
+          <rect x="20" y="408" width="1276" height="26" rx="6" fill="rgba(15, 23, 42, 0.85)" stroke="#334155" stroke-width="1"/>
+          <rect x="32" y="417" width="10" height="8" rx="1" fill="rgba(30, 41, 59, 0.55)" stroke="#94a3b8" stroke-width="0.6"/>
+          <text x="48" y="424" fill="#64748b" font-size="7">External</text>
+          <rect x="108" y="417" width="10" height="8" rx="1" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="0.6"/>
+          <text x="124" y="424" fill="#64748b" font-size="7">Processing</text>
+          <rect x="196" y="417" width="10" height="8" rx="1" fill="rgba(120, 53, 15, 0.35)" stroke="#fbbf24" stroke-width="0.6"/>
+          <text x="212" y="424" fill="#64748b" font-size="7">S3</text>
+          <rect x="248" y="417" width="10" height="8" rx="1" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="0.6"/>
+          <text x="264" y="424" fill="#64748b" font-size="7">Warehouse</text>
+          <line x1="332" y1="421" x2="348" y2="421" stroke="#64748b" stroke-width="1" stroke-dasharray="3,2"/>
+          <text x="356" y="424" fill="#64748b" font-size="7">Future</text>
+          <text x="500" y="424" fill="#64748b" font-size="7">* Evidence-grade GTFS-R needs ≥7 days of 15-min snapshots</text>
+
+          <!-- Metrics -->
+          <rect x="24" y="448" width="1272" height="60" rx="8" fill="rgba(15, 23, 42, 0.88)" stroke="#334155" stroke-width="1"/>
+          <g clip-path="url(#clip-metrics)">
+            <text x="660" y="468" fill="#f1f5f9" font-size="8.5" font-weight="700" text-anchor="middle">Platform snapshot (live Redshift validation)</text>
+            <rect x="36" y="478" width="152" height="24" rx="5" fill="rgba(8, 51, 68, 0.5)" stroke="#22d3ee" stroke-width="0.8"/>
+            <text x="112" y="494" fill="#e2e8f0" font-size="7.5" text-anchor="middle">10 raw tables</text>
+            <rect x="198" y="478" width="152" height="24" rx="5" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="0.8"/>
+            <text x="274" y="494" fill="#e2e8f0" font-size="7.5" text-anchor="middle">23 dbt models</text>
+            <rect x="360" y="478" width="152" height="24" rx="5" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="0.8"/>
+            <text x="436" y="494" fill="#e2e8f0" font-size="7.5" text-anchor="middle">58+ dbt tests</text>
+            <rect x="522" y="478" width="168" height="24" rx="5" fill="rgba(6, 78, 59, 0.5)" stroke="#34d399" stroke-width="0.8"/>
+            <text x="606" y="494" fill="#e2e8f0" font-size="7.5" text-anchor="middle">7 equity marts</text>
+            <rect x="700" y="478" width="152" height="24" rx="5" fill="rgba(6, 78, 59, 0.5)" stroke="#34d399" stroke-width="0.8"/>
+            <text x="776" y="494" fill="#e2e8f0" font-size="7.5" text-anchor="middle">SA2 scoring</text>
+            <rect x="862" y="478" width="168" height="24" rx="5" fill="rgba(251, 146, 60, 0.3)" stroke="#fb923c" stroke-width="0.8"/>
+            <text x="946" y="494" fill="#e2e8f0" font-size="7.5" text-anchor="middle">GTFS-R exploratory*</text>
+            <rect x="1040" y="478" width="168" height="24" rx="5" fill="rgba(8, 51, 68, 0.5)" stroke="#22d3ee" stroke-width="0.8"/>
+            <text x="1124" y="494" fill="#e2e8f0" font-size="7.5" text-anchor="middle">Milestones 1–7 done</text>
+          </g>
+
+          <!-- Future -->
+          <rect x="24" y="520" width="1272" height="88" rx="8" fill="rgba(30, 41, 59, 0.15)" stroke="#475569" stroke-width="1" stroke-dasharray="6,4"/>
+          <g clip-path="url(#clip-future)">
+            <text x="660" y="540" fill="#94a3b8" font-size="8.5" font-weight="600" text-anchor="middle">Planned — not in MVP</text>
+            <rect x="40" y="552" width="172" height="24" rx="12" fill="rgba(30, 41, 59, 0.45)" stroke="#475569" stroke-width="0.7"/>
+            <text x="126" y="568" fill="#94a3b8" font-size="7.5" text-anchor="middle">EventBridge schedule</text>
+            <rect x="222" y="552" width="120" height="24" rx="12" fill="rgba(30, 41, 59, 0.45)" stroke="#475569" stroke-width="0.7"/>
+            <text x="282" y="568" fill="#94a3b8" font-size="7.5" text-anchor="middle">QuickSight BI</text>
+            <rect x="352" y="552" width="120" height="24" rx="12" fill="rgba(30, 41, 59, 0.45)" stroke="#475569" stroke-width="0.7"/>
+            <text x="412" y="568" fill="#94a3b8" font-size="7.5" text-anchor="middle">Orchestration</text>
+            <rect x="482" y="552" width="108" height="24" rx="12" fill="rgba(30, 41, 59, 0.45)" stroke="#475569" stroke-width="0.7"/>
+            <text x="536" y="568" fill="#94a3b8" font-size="7.5" text-anchor="middle">Buses / trams</text>
+            <rect x="600" y="552" width="148" height="24" rx="12" fill="rgba(30, 41, 59, 0.45)" stroke="#475569" stroke-width="0.7"/>
+            <text x="674" y="568" fill="#94a3b8" font-size="7.5" text-anchor="middle">Multi-week snapshots</text>
+            <rect x="758" y="552" width="108" height="24" rx="12" fill="rgba(30, 41, 59, 0.45)" stroke="#475569" stroke-width="0.7"/>
+            <text x="812" y="568" fill="#94a3b8" font-size="7.5" text-anchor="middle">SNS alerting</text>
+            <rect x="876" y="552" width="200" height="24" rx="12" fill="rgba(30, 41, 59, 0.45)" stroke="#475569" stroke-width="0.7"/>
+            <text x="976" y="568" fill="#94a3b8" font-size="7.5" text-anchor="middle">Evidence-grade conclusions</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+
+    <div class="page-supplement">
+    <div class="cards">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot emerald"></div>
+          <h3>Data engineering (implemented)</h3>
+        </div>
+        <ul>
+          <li>• Python ingestion for GTFS static and GTFS-Realtime (Transport Victoria)</li>
+          <li>• Warehouse-ready CSV contracts with local quality checks</li>
+          <li>• S3 upload and Redshift COPY with explicit column lists</li>
+          <li>• dbt staging → intermediate → marts with tests and lineage docs</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot amber"></div>
+          <h3>Equity scoring (v1 transparent proxy)</h3>
+        </div>
+        <ul>
+          <li>• equity_impact_score = disruption_score × (0.6 + 0.4 × disadvantage_weight)</li>
+          <li>• SEIFA 2021 IRSD deciles joined at SA2 level</li>
+          <li>• Stop-to-SA2 mapping and route coverage for spatial exposure</li>
+          <li>• Not an official government KPI — decision-support only</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-dot violet"></div>
+          <h3>Analyst layer (Milestone 7)</h3>
+        </div>
+        <ul>
+          <li>• Multi-day GTFS-R snapshot collection workflow</li>
+          <li>• Coverage audit: exploratory vs analyst-ready vs strong</li>
+          <li>• Analyst report SQL, CSV exports, and chart artifacts</li>
+          <li>• Evidence-grade conclusions require ≥7 days of snapshots</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="footer">
+      Transit Disruption Equity Intelligence Platform · Melbourne metro trains · ap-southeast-2 · No credentials in diagram
+    </p>
+    </div>
+  </div>
+
+  <script>
+    async function captureElement(elementId) {
+      const el = document.getElementById(elementId);
+      const r = el.getBoundingClientRect();
+      const pad = 24;
+      return html2canvas(document.body, {
+        backgroundColor: '#020617',
+        scale: 2,
+        useCORS: true,
+        ignoreElements: (e) => e.classList && e.classList.contains('toolbar'),
+        x: r.left + window.scrollX - pad,
+        y: r.top + window.scrollY - pad,
+        width: r.width + pad * 2,
+        height: r.height + pad * 2
+      });
+    }
+
+    async function copyAsImage(btn, elementId) {
+      const orig = btn.textContent;
+      try {
+        const canvas = await captureElement(elementId || 'architecture-export');
+        const blob = await new Promise((res) => canvas.toBlob(res, 'image/png'));
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+        btn.textContent = '✓ Copied!';
+      } catch (e) {
+        btn.textContent = '✗ Failed';
+      }
+      setTimeout(() => { btn.textContent = orig; }, 2000);
+    }
+
+    async function downloadPNG(btn, elementId) {
+      const orig = btn.textContent;
+      btn.textContent = '⏳ ...';
+      try {
+        const canvas = await captureElement(elementId || 'architecture-export');
+        const link = document.createElement('a');
+        link.download =
+          elementId === 'report-container'
+            ? 'architecture_diagram_full.png'
+            : 'architecture_diagram.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        btn.textContent = '✓ Done!';
+      } catch (e) {
+        btn.textContent = '✗ Failed';
+      }
+      setTimeout(() => { btn.textContent = orig; }, 2000);
+    }
+
+    async function downloadPDF(btn, elementId) {
+      const orig = btn.textContent;
+      btn.textContent = '⏳ ...';
+      try {
+        const canvas = await captureElement(elementId || 'architecture-export');
+        const imgData = canvas.toDataURL('image/png');
+        const { jsPDF } = window.jspdf;
+        const orientation = canvas.width > canvas.height ? 'landscape' : 'portrait';
+        const pdf = new jsPDF({ orientation, unit: 'px', format: [canvas.width, canvas.height], hotfixes: ['px_scaling'] });
+        pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+        pdf.save(elementId === 'report-container' ? 'architecture_diagram_full.pdf' : 'architecture_diagram.pdf');
+        btn.textContent = '✓ Done!';
+      } catch (e) {
+        btn.textContent = '✗ Failed';
+      }
+      setTimeout(() => { btn.textContent = orig; }, 2000);
+    }
+  </script>
+</body>
+</html>

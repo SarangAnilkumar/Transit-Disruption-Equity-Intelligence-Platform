@@ -15,3 +15,28 @@ models:
         tests: [not_null]
       - name: sa2_code
         tests: [not_null]
+
+  - name: mart_sa2_multi_day_equity_summary
+    description: Multi-day SA2 rollup for recurring high-impact analysis.
+    columns:
+      - name: sa2_code
+        tests: [not_null, unique]
+      - name: days_observed
+        tests: [not_null]
+
+  - name: mart_hourly_disruption_pattern
+    description: Hourly disruption and equity impact pattern mart.
+    columns:
+      - name: snapshot_hour
+        tests: [not_null, unique]
+      - name: peak_period_flag
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['morning_peak', 'evening_peak', 'midday', 'off_peak']
+
+  - name: mart_seifa_disruption_comparison
+    description: SEIFA decile comparison of disruption equity metrics.
+    columns:
+      - name: irsd_decile
+        tests: [not_null, unique]

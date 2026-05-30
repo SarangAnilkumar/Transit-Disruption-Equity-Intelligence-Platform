@@ -1,0 +1,5 @@
+route_id,delayed_observations_in_high_impact_sa2,high_impact_sa2_count,distinct_trip_count,avg_max_delay_seconds
+aus:vic:vic-02-SUY:,64,6,8,705
+aus:vic:vic-02-BEG:,53,6,6,492
+aus:vic:vic-02-LIL:,45,6,5,489
+aus:vic:vic-02-CGB:,2,1,1,540

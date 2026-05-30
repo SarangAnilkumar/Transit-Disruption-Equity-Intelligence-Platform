@@ -163,6 +163,42 @@ Key outputs:
 
 Schema note: `macros/generate_schema_name.sql` builds into clean `staging`, `intermediate`, and `marts` schemas (legacy `staging_staging` views may remain until dropped manually).
 
+## Milestone 7 — Evidence-grade analyst insight layer
+
+Collect multi-day GTFS-R snapshots, audit coverage sufficiency, refresh marts, and produce an analyst report with honest exploratory/evidence-ready labelling.
+
+Commands:
+```bash
+python ingestion/collect_gtfs_realtime_snapshots.py --duration-hours 8 --interval-minutes 15 --feed both
+python ingestion/audit_gtfsr_snapshot_coverage.py
+python ingestion/refresh_after_gtfsr_collection.py --dry-run
+python ingestion/export_analyst_report_outputs.py
+python ingestion/create_analyst_report_visuals.py
+```
+
+Documentation: `docs/analyst_research_plan.md`, `docs/gtfs_realtime_collection_schedule.md`, `docs/analyst_report/public_transport_disruption_equity_report.md`.
+
+## Portfolio positioning
+
+### A. Data Engineering value
+
+- Python ingestion for GTFS static and GTFS-Realtime (Transport Victoria)
+- Warehouse-ready CSV contracts, local quality checks, reconciliation
+- S3 upload and Redshift COPY with explicit column lists and truncate-before-load
+- dbt staging → intermediate → marts with tests and lineage docs
+- Transparent scoring logic (`v1_transparent_weighted_proxy`), not black-box ML
+
+### B. Data Analyst value
+
+- Research questions and hypotheses (`docs/analyst_research_plan.md`)
+- Disruption equity score with SEIFA decile comparison
+- Route, SA2, and hourly insight queries + exported CSVs
+- Snapshot sufficiency audit (exploratory vs analyst-ready vs strong)
+- Visual report artifacts and professional write-up with limitations
+- Resume bullets for both DE and DA roles
+
+**Important:** Analyst conclusions are **evidence-grade only after ≥7 days** of GTFS-R collection at 15-minute intervals. Below that threshold, outputs are labelled **exploratory**.
+
 ## Project status
 
 **Milestones 1–6 complete.** Live Redshift validation: raw tables loaded, dbt staging/intermediate/marts built, tests passing, docs and lineage screenshots captured.
